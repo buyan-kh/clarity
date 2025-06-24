@@ -24,20 +24,47 @@ export function Schedule({ onBack, userInput, longTermGoals }: ScheduleProps) {
       setError("");
 
       console.log("Sending request to backend...");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-      const response = await fetch(`${apiUrl}/generate-schedule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          daily_goal: userInput,
-          long_term_goal: longTermGoals || "",
-          schedule_text: longTermGoals || "",
-        }),
-      });
+      
+      // Try Vercel API first, then fallback to localhost
+      const vercelUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      const localUrl = "http://localhost:5002";
+      
+      let response;
+      let apiUrl = vercelUrl;
+      
+      try {
+        response = await fetch(`${vercelUrl}/generate-schedule`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            daily_goal: userInput,
+            long_term_goal: longTermGoals || "",
+            schedule_text: longTermGoals || "",
+          }),
+        });
+        
+        if (!response.ok && response.status === 404) {
+          throw new Error("Vercel API not found, trying localhost");
+        }
+      } catch (error) {
+        console.log("Vercel API failed, trying localhost...");
+        apiUrl = localUrl;
+        response = await fetch(`${localUrl}/generate-schedule`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            daily_goal: userInput,
+            long_term_goal: longTermGoals || "",
+            schedule_text: longTermGoals || "",
+          }),
+        });
+      }
 
-      console.log("Response status:", response.status);
+      console.log(`Response from ${apiUrl}:`, response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
