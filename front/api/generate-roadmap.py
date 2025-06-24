@@ -2,7 +2,7 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs
-from google import genai
+import google.generativeai as genai
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -13,17 +13,16 @@ class handler(BaseHTTPRequestHandler):
             
             long_term_goal = data.get('long_term_goal', '')
             
-            client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
+            # Initialize Gemini client
+            genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
             
             prompt = f"""
 analysis this long term goal and make a roadmap of 6 months to achieve it. make it a json object. get todays date and make the roadmap for the next 6 months. show date in the roadmap.
 {long_term_goal}
 """
             
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
-            )
+            response = model.generate_content(prompt)
             
             roadmap = response.text
             

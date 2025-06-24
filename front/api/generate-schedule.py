@@ -2,7 +2,7 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs
-from google import genai
+import google.generativeai as genai
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -15,7 +15,9 @@ class handler(BaseHTTPRequestHandler):
             long_term_goal = data.get('long_term_goal', '')
             schedule_text = data.get('schedule_text', '')
             
-            client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
+            # Initialize Gemini client
+            genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
             
             prompt = f"""
 You are a productivity assistant. Generate a detailed, block-style daily schedule broken into ☀️ Morning, 🌆 Afternoon, and 🌙 Night blocks. Be really analytical about cognitive load and time needed for each task. dont show how many minutes for each task, just show the tasks and times.
@@ -44,10 +46,7 @@ Output:
 
 Do not include any explanations. Only return the structured plan."""
 
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt
-            )
+            response = model.generate_content(prompt)
             
             schedule = response.text
             
