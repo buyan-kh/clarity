@@ -1,10 +1,5 @@
 {
-  "functions": {
-    "api/generate-schedule.py": {
-      "runtime": "@vercel/python"
-    },
-    "api/generate-roadmap.py": {
-      "runtime": "@vercel/python"
-    }
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
 }
