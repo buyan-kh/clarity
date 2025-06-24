@@ -37,11 +37,9 @@ If there is school, include homework time in the schedule. Include time for brea
 Input:
 - Today's intention: "{daily_goal}"
 - Long-term goals: {long_term_goal}
- and schedules:
-{schedule_text}
+- Schedule text: {schedule_text}
+
 If long-term goals and schedules are not provided, make a schedule for the day based on the daily goal. Also if theres given time schedule already in the input, put that in the schedule.
-this is a roadmap of 6 months to achieve the long term goal: {long_term_goal}
-include tasks from this roadmap in the schedule.
 
 Output:
 - A realistic schedule from 7:30 AM to 10:30 PM
