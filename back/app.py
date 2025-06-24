@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-from google import genai
+import google.generativeai as genai
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -23,7 +23,8 @@ def generate_schedule():
         schedule_text = data.get('schedule_text', '')
         
         # Initialize Gemini client
-        client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
         prompt = f"""
 You are a productivity assistant. Generate a detailed, block-style daily schedule broken into ☀️ Morning, 🌆 Afternoon, and 🌙 Night blocks. Be really analytical about cognitive load and time needed for each task. dont show how many minutes for each task, just show the tasks and times.
@@ -52,10 +53,7 @@ Output:
 
 Do not include any explanations. Only return the structured plan."""
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
         
         return jsonify({'schedule': response.text})
         
@@ -69,17 +67,15 @@ def generate_roadmap():
         long_term_goal = data.get('long_term_goal', '')
         
         # Initialize Gemini client
-        client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
         
         prompt = f"""
 analysis this long term goal and make a roadmap of 6 months to achieve it. make it a json object. get todays date and make the roadmap for the next 6 months. show date in the roadmap.
 {long_term_goal}
 """
         
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
         
         return jsonify({'roadmap': response.text})
         
