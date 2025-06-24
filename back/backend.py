@@ -79,5 +79,10 @@ analysis this long term goal and make a roadmap of 6 months to achieve it. make 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy', 'message': 'Clarity backend is running'})
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    port = int(os.environ.get('PORT', 5002))
+    app.run(debug=False, host='0.0.0.0', port=port)
