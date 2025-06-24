@@ -26,7 +26,7 @@ export function Schedule({ onBack, userInput, longTermGoals }: ScheduleProps) {
       console.log("Sending request to backend...");
       
       // Try Vercel API first, then fallback to localhost
-      const vercelUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+      const vercelUrl = process.env.NEXT_PUBLIC_API_URL || "https://clarity-nvae-git-main-buyans-projects-56ef48dc.vercel.app";
       const localUrl = "http://localhost:5002";
       
       let response;
