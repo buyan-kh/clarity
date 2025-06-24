@@ -1,18 +1,28 @@
+import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from google import genai
+import json
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
 
 client = genai.Client(api_key="AIzaSyBe08bljRDvLMoV2sHGnLKd4kWsh6L_w2w")
 
-
-daily_goal = "Finish ML homework and stay consistent with trading research."
-schedule_text = "i have school between 10am - 1pm, my commute to school is 20 minutes, i want to exercise around 45 minutes daily, i have dinner around 6pm"
-long_term_goal = "my long term goal is to become very good at leetcode and ml"
-
-prompt = f"""
+@app.route('/generate-schedule', methods=['POST'])
+def generate_schedule():
+    data = request.json
+    daily_goal = data.get('daily_goal', '')
+    long_term_goal = data.get('long_term_goal', '')
+    schedule_text = data.get('schedule_text', '')
+    
+    prompt = f"""
 You are a productivity assistant. Generate a detailed, block-style daily schedule broken into ☀️ Morning, 🌆 Afternoon, and 🌙 Night blocks. Be really analytical about cognitive load and time needed for each task. dont show how many minutes for each task, just show the tasks and times.
 If there is school, include homework time in the schedule. Include time for breakfast, lunch and dinner.
 
 Input:
-- Today’s intention: "{daily_goal}"
+- Today's intention: "{daily_goal}"
 - Long-term goals: {long_term_goal}
  and schedules:
 {schedule_text}
@@ -34,23 +44,37 @@ Output:
 
 Do not include any explanations. Only return the structured plan."""
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents=prompt
-)
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        
+        schedule = response.text
+        return jsonify({'schedule': schedule})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-a = response.text
-
-print(a)
-
-prompt1 = f"""
+@app.route('/generate-roadmap', methods=['POST'])
+def generate_roadmap():
+    data = request.json
+    long_term_goal = data.get('long_term_goal', '')
+    
+    prompt = f"""
 analysis this long term goal and make a roadmap of 6 months to achieve it. make it a json object. get todays date and make the roadmap for the next 6 months. show date in the roadmap.
 {long_term_goal}
 """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        
+        roadmap = response.text
+        return jsonify({'roadmap': roadmap})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-response1 = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents=prompt1
-)
-
-print(response1.text)
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
