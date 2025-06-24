@@ -101,7 +101,7 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="w-full"
             >
-              <Schedule onBack={() => setShowSchedule(false)} userInput={input} />
+              <Schedule onBack={() => setShowSchedule(false)} userInput={input} longTermGoals={longTermGoals} />
             </motion.div>
           ) : (
             <motion.div

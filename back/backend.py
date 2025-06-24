@@ -4,11 +4,14 @@ from flask_cors import CORS
 from google import genai
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-client = genai.Client(api_key="AIzaSyBe08bljRDvLMoV2sHGnLKd4kWsh6L_w2w")
+client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
 @app.route('/generate-schedule', methods=['POST'])
 def generate_schedule():
@@ -77,4 +80,4 @@ analysis this long term goal and make a roadmap of 6 months to achieve it. make 
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

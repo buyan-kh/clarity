@@ -1,13 +1,80 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { useState, useEffect } from "react"
 
 interface ScheduleProps {
   onBack: () => void
   userInput: string
+  longTermGoals?: string
 }
 
-export function Schedule({ onBack, userInput }: ScheduleProps) {
+export function Schedule({ onBack, userInput, longTermGoals }: ScheduleProps) {
+  const [schedule, setSchedule] = useState<string>("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>("")
+
+  useEffect(() => {
+    generateSchedule()
+  }, [userInput, longTermGoals])
+
+  const generateSchedule = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('http://localhost:5001/generate-schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          daily_goal: userInput,
+          long_term_goal: longTermGoals || '',
+          schedule_text: longTermGoals || ''
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate schedule')
+      }
+
+      const data = await response.json()
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      
+      setSchedule(data.schedule)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate schedule')
+      console.error('Schedule generation error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const parseSchedule = (scheduleText: string) => {
+    const sections = scheduleText.split(/(?=☀️|🌆|🌙)/)
+    return sections.filter(section => section.trim())
+  }
+
+  const renderScheduleSection = (section: string) => {
+    const lines = section.split('\n').filter(line => line.trim())
+    const title = lines[0]
+    const items = lines.slice(1)
+
+    return (
+      <div key={title} className="space-y-2">
+        <h3 className="font-medium text-gray-800">{title}</h3>
+        <ul className="space-y-2 text-sm text-gray-600">
+          {items.map((item, index) => (
+            <li key={index} className="p-2 bg-gray-50 rounded-md">
+              {item.trim()}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex items-center mb-6">
@@ -24,41 +91,27 @@ export function Schedule({ onBack, userInput }: ScheduleProps) {
         </div>
       )}
 
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h3 className="font-medium text-gray-800">☀️ Morning Block</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="p-2 bg-gray-50 rounded-md">7:30–8:00 Wake up, water, light, stretch</li>
-            <li className="p-2 bg-gray-50 rounded-md">8:00–8:30 Leetcode (fresh brain = best time for this)</li>
-            <li className="p-2 bg-gray-50 rounded-md">8:30–9:00 – Breakfast, light break</li>
-            <li className="p-2 bg-gray-50 rounded-md">9:00–9:30 – ML Learning</li>
-            <li className="p-2 bg-gray-50 rounded-md">9:30–9:40 – Prep and leave for class</li>
-            <li className="p-2 bg-gray-50 rounded-md">9:40–13:20 – Class + Commute</li>
-          </ul>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="text-gray-600">Generating your personalized schedule...</div>
         </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium text-gray-800">🌆 Afternoon Block</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="p-2 bg-gray-50 rounded-md">13:20–14:00 – Lunch, decompress</li>
-            <li className="p-2 bg-gray-50 rounded-md">14:00–15:00 – Homework (main session)</li>
-            <li className="p-2 bg-gray-50 rounded-md">15:00–15:15 – Short break (walk/stretch)</li>
-            <li className="p-2 bg-gray-50 rounded-md">15:15–16:15 – School work second session</li>
-            <li className="p-2 bg-gray-50 rounded-md">16:15–16:45 – Open buffer (overflow homework)</li>
-            <li className="p-2 bg-gray-50 rounded-md">17:00–19:00 – Free time / hang out / eat</li>
-          </ul>
+      ) : error ? (
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+            <p className="text-sm text-red-700">Error: {error}</p>
+          </div>
+          <Button 
+            onClick={generateSchedule}
+            className="rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 px-6 py-2"
+          >
+            Try Again
+          </Button>
         </div>
-
-        <div className="space-y-2">
-          <h3 className="font-medium text-gray-800">🌙 Night Block</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="p-2 bg-gray-50 rounded-md">
-              19:00–20:00 – Optional: Catch up ML, read paper, polish project
-            </li>
-            <li className="p-2 bg-gray-50 rounded-md">20:00–22:00 – Totally off / entertainment / chill</li>
-          </ul>
+      ) : (
+        <div className="space-y-6">
+          {parseSchedule(schedule).map(section => renderScheduleSection(section))}
         </div>
-      </div>
+      )}
 
       <div className="mt-8 flex justify-center">
         <Button
