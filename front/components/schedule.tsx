@@ -21,7 +21,10 @@ export function Schedule({ onBack, userInput, longTermGoals }: ScheduleProps) {
   const generateSchedule = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:5001/generate-schedule', {
+      setError("")
+      
+      console.log('Sending request to backend...')
+      const response = await fetch('http://localhost:5002/generate-schedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,18 +36,23 @@ export function Schedule({ onBack, userInput, longTermGoals }: ScheduleProps) {
         }),
       })
 
+      console.log('Response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error('Failed to generate schedule')
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('Response data:', data)
+      
       if (data.error) {
         throw new Error(data.error)
       }
       
       setSchedule(data.schedule)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate schedule')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate schedule'
+      setError(errorMessage)
       console.error('Schedule generation error:', err)
     } finally {
       setLoading(false)

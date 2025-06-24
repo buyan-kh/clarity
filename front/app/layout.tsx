@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={kodeMono.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={kodeMono.className} suppressHydrationWarning>{children}</body>
     </html>
   )
 }
