@@ -1,24 +1,31 @@
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 from google import genai
-import json
-from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["*"])
 
-# Initialize Gemini client
-client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        'status': 'healthy', 
+        'message': 'Clarity backend is running',
+        'endpoints': ['/generate-schedule', '/generate-roadmap']
+    })
 
 @app.route('/generate-schedule', methods=['POST'])
 def generate_schedule():
-    data = request.json
-    daily_goal = data.get('daily_goal', '')
-    long_term_goal = data.get('long_term_goal', '')
-    schedule_text = data.get('schedule_text', '')
-    
-    prompt = f"""
+    try:
+        data = request.get_json()
+        daily_goal = data.get('daily_goal', '')
+        long_term_goal = data.get('long_term_goal', '')
+        schedule_text = data.get('schedule_text', '')
+        
+        # Initialize Gemini client
+        client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+        
+        prompt = f"""
 You are a productivity assistant. Generate a detailed, block-style daily schedule broken into ☀️ Morning, 🌆 Afternoon, and 🌙 Night blocks. Be really analytical about cognitive load and time needed for each task. dont show how many minutes for each task, just show the tasks and times.
 If there is school, include homework time in the schedule. Include time for breakfast, lunch and dinner.
 
@@ -45,42 +52,40 @@ Output:
 
 Do not include any explanations. Only return the structured plan."""
 
-    try:
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
         )
         
-        schedule = response.text
-        return jsonify({'schedule': schedule})
+        return jsonify({'schedule': response.text})
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/generate-roadmap', methods=['POST'])
 def generate_roadmap():
-    data = request.json
-    long_term_goal = data.get('long_term_goal', '')
-    
-    prompt = f"""
+    try:
+        data = request.get_json()
+        long_term_goal = data.get('long_term_goal', '')
+        
+        # Initialize Gemini client
+        client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+        
+        prompt = f"""
 analysis this long term goal and make a roadmap of 6 months to achieve it. make it a json object. get todays date and make the roadmap for the next 6 months. show date in the roadmap.
 {long_term_goal}
 """
-    
-    try:
+        
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
         )
         
-        roadmap = response.text
-        return jsonify({'roadmap': roadmap})
+        return jsonify({'roadmap': response.text})
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'healthy', 'message': 'Clarity backend is running'})
-
-# This is important for Vercel
+# This is required for Vercel
 if __name__ == '__main__':
-    app.run() 
+    app.run(debug=True) 
