@@ -6,7 +6,7 @@ from google import genai
 app = Flask(__name__)
 CORS(app, origins=["*"])
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
     return jsonify({
         'status': 'healthy', 
@@ -86,6 +86,5 @@ analysis this long term goal and make a roadmap of 6 months to achieve it. make 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# This is required for Vercel
 if __name__ == '__main__':
     app.run(debug=True) 
