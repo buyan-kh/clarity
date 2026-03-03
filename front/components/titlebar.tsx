@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { 
-  Home, 
-  Target, 
-  CheckSquare, 
-  Calendar, 
+import {
+  Home,
+  Target,
+  CheckSquare,
+  Calendar,
   BarChart3,
+  Wind,
   Settings,
   Minimize2,
   Square,
@@ -31,6 +32,7 @@ export function Titlebar({ onNavigate, currentPage }: TitlebarProps) {
     { id: 'habits', icon: BarChart3, label: 'Habits' },
     { id: 'roadmap', icon: Target, label: 'Roadmap' },
     { id: 'checklist', icon: CheckSquare, label: 'Goals' },
+    { id: 'mindfulness', icon: Wind, label: 'Mindfulness' },
     { id: 'calendar', icon: Calendar, label: 'Calendar' },
   ]
 
