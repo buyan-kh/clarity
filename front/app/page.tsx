@@ -11,6 +11,7 @@ import { Titlebar } from "@/components/titlebar"
 import { HabitTracker } from "@/components/habit-tracker"
 import { Roadmap } from "@/components/roadmap"
 import { GoalChecklist } from "@/components/goal-checklist"
+import { Mindfulness } from "@/components/mindfulness"
 
 export default function Home() {
   const [input, setInput] = useState("")
@@ -50,6 +51,8 @@ export default function Home() {
         return <Roadmap />
       case 'checklist':
         return <GoalChecklist />
+      case 'mindfulness':
+        return <Mindfulness />
       case 'calendar':
         return (
           <div className="flex items-center justify-center h-96">
